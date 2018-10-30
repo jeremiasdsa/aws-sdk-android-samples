@@ -15,13 +15,22 @@
 
 package com.amazonaws.demo.androidpubsub;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.iot.AWSIotKeystoreHelper;
@@ -37,6 +46,8 @@ import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
 
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.util.UUID;
@@ -49,12 +60,12 @@ public class PubSubActivity extends Activity {
 
     // IoT endpoint
     // AWS Iot CLI describe-endpoint call returns: XXXXXXXXXX.iot.<region>.amazonaws.com
-    private static final String CUSTOMER_SPECIFIC_ENDPOINT = "CHANGE_ME";
+    private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a2a70b6d9h2kvw-ats.iot.us-east-1.amazonaws.com";
     // Cognito pool ID. For this app, pool needs to be unauthenticated pool with
     // AWS IoT permissions.
-    private static final String COGNITO_POOL_ID = "CHANGE_ME";
+    //private static final String COGNITO_POOL_ID = "us-east-2_9jXMorMnT";
     // Name of the AWS IoT policy to attach to a newly created certificate
-    private static final String AWS_IOT_POLICY_NAME = "CHANGE_ME";
+    private static final String AWS_IOT_POLICY_NAME = "mos-default";
 
     // Region of AWS IoT
     private static final Regions MY_REGION = Regions.US_EAST_1;
@@ -90,9 +101,26 @@ public class PubSubActivity extends Activity {
 
     CognitoCachingCredentialsProvider credentialsProvider;
 
+
+
+
+
+//    ToggleButton toggle ;
+    Switch list_toggle;
+
+    ImageView image;
+    ImageView imageConnected;
+
+
+
+
+
+
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
 
         txtSubcribe = (EditText) findViewById(R.id.txtSubcribe);
@@ -123,11 +151,77 @@ public class PubSubActivity extends Activity {
         tvClientId.setText(clientId);
 
         // Initialize the AWS Cognito credentials provider
+//        credentialsProvider = new CognitoCachingCredentialsProvider(
+//                getApplicationContext(), // context
+//                COGNITO_POOL_ID, // Identity Pool ID
+//                MY_REGION // Region
+//        );
+
+//        toggle = (ToggleButton) findViewById(R.id.switch1);
+        image = (ImageView) findViewById(R.id.imageView2);
+        imageConnected = (ImageView) findViewById(R.id.imageView3);
+
+//
+////
+////        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+////            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+////                if (isChecked) {
+////                    // The toggle is enabled
+////                } else {
+////                    // The toggle is disabled
+////                }
+////            }
+////        });
+
+
+
+
+        list_toggle=(Switch)findViewById(R.id.switch1);
+        list_toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked) {
+                    list_toggle.setText("TURN ON");  //To change the text near to switch
+                    Log.d("You are :", "Checked");
+                    try {
+                        mqttManager.publishString("{\n" +
+                                "    gpio: {\n" +
+                                "        pin: 2,\n" +
+                                "        state: 0\n" +
+                                "    }\n" +
+                                "}", "/request", AWSIotMqttQos.QOS0);
+                    } catch (Exception e) {
+                        Log.e(LOG_TAG, "Publish error.", e);
+                    }
+                }
+                else {
+                    list_toggle.setText("TURN OFF");  //To change the text near to switch
+                    Log.d("You are :", " Not Checked");
+                    try {
+                        mqttManager.publishString("{\n" +
+                                "    gpio: {\n" +
+                                "        pin: 2,\n" +
+                                "        state: 1\n" +
+                                "    }\n" +
+                                "}", "/request", AWSIotMqttQos.QOS0);
+                    } catch (Exception e) {
+                        Log.e(LOG_TAG, "Publish error.", e);
+                    }
+                }
+            }
+        });
+
+
         credentialsProvider = new CognitoCachingCredentialsProvider(
-                getApplicationContext(), // context
-                COGNITO_POOL_ID, // Identity Pool ID
-                MY_REGION // Region
+                getApplicationContext(),
+                "us-east-1:63125eed-1b9a-47f5-b2e6-e66ba81fff9a", // Identity pool ID
+                Regions.US_EAST_1 // Region
         );
+
+
+
+
+
 
         Region region = Region.getRegion(MY_REGION);
 
@@ -140,7 +234,7 @@ public class PubSubActivity extends Activity {
 
         // Set Last Will and Testament for MQTT.  On an unclean disconnect (loss of connection)
         // AWS IoT will publish this message to alert other clients.
-        AWSIotMqttLastWillAndTestament lwt = new AWSIotMqttLastWillAndTestament("my/lwt/topic",
+        AWSIotMqttLastWillAndTestament lwt = new AWSIotMqttLastWillAndTestament("/request",
                 "Android client lost connection", AWSIotMqttQos.QOS0);
         mqttManager.setMqttLastWillAndTestament(lwt);
 
@@ -242,7 +336,29 @@ public class PubSubActivity extends Activity {
             Log.d(LOG_TAG, "clientId = " + clientId);
 
             try {
-                mqttManager.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
+
+//                mqttManager.connect(credentialsProvider, new AWSIotMqttClientStatusCallback() {
+//                    @Override
+//                    public void onStatusChanged(AWSIotMqttClientStatus status, Throwable throwable) {
+//                        Log.d("Aqui","DEU BOM PAPAI");
+//                    }
+//                });
+
+
+                credentialsProvider = new CognitoCachingCredentialsProvider(
+                        getApplicationContext(),
+                        "us-east-1:63125eed-1b9a-47f5-b2e6-e66ba81fff9a", // Identity pool ID
+                        Regions.US_EAST_1 // Region
+                );
+
+
+
+
+                mqttManager.connect(credentialsProvider, new AWSIotMqttClientStatusCallback() {
+
+
+
+                //.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
                     @Override
                     public void onStatusChanged(final AWSIotMqttClientStatus status,
                             final Throwable throwable) {
@@ -253,20 +369,24 @@ public class PubSubActivity extends Activity {
                             public void run() {
                                 if (status == AWSIotMqttClientStatus.Connecting) {
                                     tvStatus.setText("Connecting...");
+                                    imageConnected.setBackgroundColor(Color.YELLOW);
 
                                 } else if (status == AWSIotMqttClientStatus.Connected) {
                                     tvStatus.setText("Connected");
+                                    imageConnected.setBackgroundColor(Color.GREEN);
 
                                 } else if (status == AWSIotMqttClientStatus.Reconnecting) {
                                     if (throwable != null) {
                                         Log.e(LOG_TAG, "Connection error.", throwable);
                                     }
                                     tvStatus.setText("Reconnecting");
+                                    imageConnected.setBackgroundColor(Color.YELLOW);
                                 } else if (status == AWSIotMqttClientStatus.ConnectionLost) {
                                     if (throwable != null) {
                                         Log.e(LOG_TAG, "Connection error.", throwable);
                                     }
                                     tvStatus.setText("Disconnected");
+                                    imageConnected.setBackgroundColor(Color.RED);
                                 } else {
                                     tvStatus.setText("Disconnected");
 
@@ -304,6 +424,18 @@ public class PubSubActivity extends Activity {
                                             Log.d(LOG_TAG, "   Topic: " + topic);
                                             Log.d(LOG_TAG, " Message: " + message);
 
+                                            if(message.equals("{\n" +
+                                                    "    gpio: {\n" +
+                                                    "        pin: 2,\n" +
+                                                    "        state: 0\n" +
+                                                    "    }\n" +
+                                                    "}")) {
+
+                                                image.setBackgroundResource(R.drawable.lampn);
+                                            } else {
+                                                image.setBackgroundResource(R.drawable.lampff);
+                                            }
+
                                             tvLastMessage.setText(message);
 
                                         } catch (UnsupportedEncodingException e) {
@@ -326,7 +458,16 @@ public class PubSubActivity extends Activity {
             final String topic = txtTopic.getText().toString();
             final String msg = txtMessage.getText().toString();
 
+            System.out.println(msg);
+
             try {
+
+
+
+
+
+
+
                 mqttManager.publishString(msg, topic, AWSIotMqttQos.QOS0);
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Publish error.", e);
@@ -347,4 +488,5 @@ public class PubSubActivity extends Activity {
 
         }
     };
+
 }

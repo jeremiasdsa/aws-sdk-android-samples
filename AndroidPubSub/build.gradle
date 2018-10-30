@@ -1,21 +1,32 @@
 repositories {
     jcenter()
+    google()
+    maven { url 'https://maven.fabric.io/public' }
 }
 
 buildscript {
     repositories {
         jcenter()
+        google()
+        maven { url 'https://maven.fabric.io/public' }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'io.fabric.tools:gradle:1.+'
     }
 }
 
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
 
 dependencies {
-    compile 'com.amazonaws:aws-android-sdk-iot:2.7.+'
+    implementation 'com.android.support:appcompat-v7:25.4.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    compile 'com.amazonaws:aws-android-sdk-iot:2.6.+'
+    compile('com.crashlytics.sdk.android:crashlytics:2.9.5@aar') {
+        transitive = true;
+    }
 }
 
 android {
