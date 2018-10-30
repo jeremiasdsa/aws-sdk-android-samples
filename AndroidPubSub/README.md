@@ -1,3 +1,42 @@
+# The Lamp mongoose IoT Sample
+
+This is a modified sample to controll an ESP8266's led device using a Swift app.
+
+## Requirements 
+
+You need to set up the ESP8266 following the tutorial below:
+[AWS IoT on Mongoose OS](https://aws.amazon.com/blogs/apn/aws-iot-on-mongoose-os-part-1/).
+
+## Using the Sample
+
+Click connect to estabilish a connection with IoT, when the green label apears, write the topic name "request", then subscribe in this topic. Use the switch button to interact with the EPS8266 turning on and off its led, also a feed back is displayed on the app.
+
+
+## Images
+
+<p align="center">
+  <img src="https://github.com/jeremiasdsa/aws-sdk-android-samples/blob/lamp-mongose-esp8266/AndroidPubSub/images/Screen%20Shot%202018-10-30%20at%2015.25.46.png" width="250" title="hover text">
+  <img src="https://github.com/jeremiasdsa/aws-sdk-android-samples/blob/lamp-mongose-esp8266/AndroidPubSub/images/Screen%20Shot%202018-10-30%20at%2015.26.03.png" width="250" alt="accessibility text">
+
+</p>
+
+<p align="center">
+<img src="https://github.com/jeremiasdsa/aws-sdk-android-samples/blob/lamp-mongose-esp8266/AndroidPubSub/images/Screen%20Shot%202018-10-30%20at%2015.26.38.png" width="250" alt="accessibility text">
+</p>
+
+<p align="center">
+  <img src="https://github.com/jeremiasdsa/aws-sdk-android-samples/blob/lamp-mongose-esp8266/AndroidPubSub/images/Screen%20Shot%202018-10-30%20at%2015.26.51.png" width="250" title="hover text">
+  <img src="https://github.com/jeremiasdsa/aws-sdk-android-samples/blob/lamp-mongose-esp8266/AndroidPubSub/images/Screen%20Shot%202018-10-30%20at%2015.27.11.png" width="250" alt="accessibility text">
+
+</p>
+
+<p align="center">
+  <img src="https://github.com/jeremiasdsa/aws-sdk-ios-samples/blob/lamp-mongoose-esp8266/IoT-Sample/Swift/images/Screen%20Shot%202018-09-18%20at%2012.07.56.png" width="150" title="hover text">
+  <img src="https://github.com/jeremiasdsa/aws-sdk-ios-samples/blob/lamp-mongoose-esp8266/IoT-Sample/Swift/images/Screen%20Shot%202018-09-18%20at%2012.08.04.png" width="150" alt="accessibility text">
+</p>
+
+
+
 # Android PubSub Sample
 
 This sample demonstrates the use of the AWS IoT APIs to securely publish-to and subscribe-from MQTT topics.  It uses Cognito federated identities in conjunction with AWS IoT to create a client certificate and private key and store it in a local Java keystore.  This identity is then used to authenticate to AWS IoT.  Once a connection to the AWS IoT platform has been established, the sample app presents a simple UI to publish and subscribe over MQTT. The app will use the certifcate and private key saved in the local java keystore for future connections.
