@@ -1,6 +1,6 @@
 # The Lamp mongoose IoT Sample
 
-This is a modified sample to controll an ESP8266's led device using a Swift app.
+This is a modified sample to controll an ESP8266's led device using a Android app.
 
 ## Requirements 
 
